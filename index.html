@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Green Claims Radar — Legal & Compliance Portal</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root {
+      --flat-white: #fcf9f4;
+      --possibility: #849fa4;
+      --crema: #f7eedc;
+      --focus: #2a5962;
+      --latte: #d3ba91;
+      --direction: #6b7c43;
+      --mocha: #8c7454;
+      --ambition: #a04830;
+      --doppio: #3f3a31;
+      --accent-gold: #cc902d;
+    }
+
+    * { box-sizing: border-box; }
+
+    /* Reliable pointer cursor for interactable elements */
+    body {
+      background-color: var(--flat-white);
+      color: var(--doppio);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      cursor: default;
+    }
+
+    button, a, select, input, textarea {
+      cursor: pointer !important;
+    }
+
+    /* Header */
+    header {
+      background-color: var(--focus);
+      color: #ffffff;
+      border-bottom: 4px solid var(--accent-gold);
+      padding: 1rem 1.5rem;
+      position: sticky; top: 0; z-index: 50;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .header-container {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+    .brand-title {
+      font-size: 1.5rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin: 0;
+    }
+    .brand-sub { font-size: 0.75rem; color: var(--possibility); margin-top: 0.2rem; }
+
+    /* Action Buttons */
+    .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .btn {
+      padding: 0.6rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+      border-radius: 6px; border: 1px solid transparent; color: #ffffff; transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-admin { background-color: var(--doppio); border-color: rgba(211,186,145,0.4); }
+    .btn-own { background-color: var(--direction); }
+    .btn-competitor { background-color: var(--ambition); }
+
+    /* Admin Banner */
+    #admin-toolbar {
+      background-color: var(--doppio); color: var(--crema);
+      padding: 0.6rem 1.5rem; border-bottom: 1px solid var(--latte); font-size: 0.75rem;
+    }
+    #admin-toolbar.hidden { display: none; }
+    .admin-bar-inner {
+      max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;
+    }
+
+    /* Main Container */
+    main { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;
+    }
+    .stat-card {
+      background-color: rgba(247,238,220,0.7); border: 1px solid var(--latte);
+      border-radius: 12px; padding: 1.25rem; display: flex; justify-content: space-between; align-items: center;
+    }
+    .stat-label { font-size: 0.75rem; text-transform: uppercase; color: var(--mocha); font-weight: bold; }
+    .stat-value { font-size: 1.875rem; font-weight: bold; margin-top: 0.25rem; color: var(--focus); }
+
+    /* Filter Bar */
+    .filter-bar {
+      background-color: var(--crema); border: 1px solid var(--latte); border-radius: 12px;
+      padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+    }
+    .filter-btn {
+      background-color: #ffffff; color: var(--doppio); border: 1px solid var(--latte);
+      padding: 0.4rem 0.8rem; font-size: 0.75rem; font-weight: bold; border-radius: 6px;
+    }
+    .filter-btn.active { background-color: var(--focus); color: #ffffff; border-color: var(--focus); }
+
+    /* Portfolio Cards Grid */
+    .portfolio-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;
+    }
+    .card {
+      background-color: rgba(247,238,220,0.4); border: 1px solid var(--latte); border-radius: 12px;
+      overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; position: relative;
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
+    .card-img-container { height: 190px; width: 100%; position: relative; background-color: var(--doppio); }
+    .card-img-container img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .badge-source {
+      position: absolute; top: 12px; left: 12px; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #ffffff;
+    }
+    .badge-internal { background-color: var(--direction); }
+    .badge-competitor { background-color: var(--ambition); }
+    .badge-ai-risk {
+      position: absolute; top: 12px; right: 12px; background-color: rgba(63, 58, 49, 0.95);
+      color: #ffffff; font-size: 0.65rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; border: 1px solid var(--accent-gold);
+    }
+
+    .admin-card-actions {
+      position: absolute; bottom: 10px; right: 10px; display: flex; gap: 6px;
+    }
+    .btn-action-sm {
+      padding: 4px 8px; font-size: 0.7rem; font-weight: bold; border-radius: 4px; border: none; color: #fff;
+    }
+    .btn-edit { background-color: var(--focus); }
+    .btn-delete { background-color: var(--ambition); }
+
+    .card-body { padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; flex: 1; }
+    .card-brand { font-size: 0.75rem; font-weight: bold; margin-bottom: 0.25rem; }
+    .card-text { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--doppio); }
+    .card-category {
+      font-size: 0.75rem; background-color: var(--crema); padding: 0.5rem; border-radius: 4px; border: 1px solid var(--latte); margin-bottom: 0.75rem;
+    }
+    
+    .ai-score-container {
+      background-color: rgba(42, 89, 98, 0.08); border: 1px solid rgba(42, 89, 98, 0.2); border-radius: 6px; padding: 0.6rem 0.75rem; margin-bottom: 0.75rem;
+    }
+    .ai-score-header { display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: bold; color: var(--focus); }
+    .ai-progress-bar { height: 5px; background-color: var(--latte); border-radius: 3px; margin-top: 4px; overflow: hidden; }
+    .ai-progress-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+    .ai-legal-rationale { font-size: 0.68rem; color: var(--mocha); margin-top: 6px; line-height: 1.35; border-top: 1px dashed rgba(211,186,145,0.6); padding-top: 4px; }
+
+    .status-select {
+      font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--latte); background-color: #fff;
+    }
+
+    .modal-backdrop {
+      position: fixed; inset: 0; background-color: rgba(63,58,49,0.75);
+      display: flex; align-items: center; justify-content: center; padding: 1rem; z-index: 100;
+    }
+    .modal-backdrop.hidden { display: none; }
+    .modal-content {
+      background-color: var(--flat-white); border: 2px solid var(--focus); border-radius: 16px;
+      width: 100%; max-width: 550px; max-height: 90vh; overflow-y: auto; padding: 1.5rem;
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--latte); padding-bottom: 0.75rem; }
+    .form-group { margin-top: 1rem; }
+    .form-group label { display: block; font-size: 0.75rem; font-weight: bold; color: var(--focus); margin-bottom: 0.25rem; }
+    .form-control {
+      width: 100%; background-color: rgba(247,238,220,0.5); border: 1px solid var(--latte); border-radius: 8px; padding: 0.5rem 0.75rem; font-size: 0.875rem; color: var(--doppio);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-container">
+      <div>
+        <h1 class="brand-title">GREEN CLAIMS RADAR</h1>
+        <div class="brand-sub">EU EmpCo & Forbrugerombudsmanden Compliance Portfolio</div>
+      </div>
+      <div class="btn-group">
+        <button id="admin-auth-btn" onclick="handleAdminAuthClick()" class="btn btn-admin"><span id="admin-btn-label">Admin Login</span></button>
+        <button onclick="openModalForSource('Internal Brand')" class="btn btn-own">Report Own Channel</button>
+        <button onclick="openModalForSource('Competitor')" class="btn btn-competitor">Spot Competitor</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="admin-toolbar" class="hidden">
+    <div class="admin-bar-inner">
+      <span><strong>Authenticated Admin Session</strong> — Master Permissions Enabled (GitHub Pages Edition)</span>
+      <button onclick="exportToCSV()" class="btn btn-admin" style="background:var(--focus);">Export CSV</button>
+    </div>
+  </div>
+
+  <main>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Total Submissions</div>
+          <div id="stat-total" class="stat-value">0</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Our Own Channels</div>
+          <div id="stat-internal" class="stat-value" style="color:var(--direction)">0</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Competitor Claims</div>
+          <div id="stat-competitors" class="stat-value" style="color:var(--accent-gold)">0</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">High Legal AI Risk</div>
+          <div id="stat-highrisk" class="stat-value" style="color:var(--ambition)">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <div>
+        <span style="font-size:0.75rem; font-weight:bold; color:var(--mocha); margin-right:0.5rem;">FILTER:</span>
+        <button onclick="filterSource('all')" class="filter-btn active">All Entries</button>
+        <button onclick="filterSource('Internal Brand')" class="filter-btn">Our Own Channels</button>
+        <button onclick="filterSource('Competitor')" class="filter-btn">Competitors</button>
+      </div>
+      <button onclick="exportToCSV()" class="filter-btn" style="background:none; border:none; color:var(--focus);">Download CSV</button>
+    </div>
+
+    <div id="portfolio-grid" class="portfolio-grid"></div>
+  </main>
+
+  <div id="admin-login-modal" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width:450px; height:auto;">
+      <div class="modal-header">
+        <h3 style="margin:0; color:var(--focus);">MASTER ADMIN AUTHENTICATION</h3>
+        <button onclick="toggleAdminModal(false)" style="background:none; border:none; font-size:1.2rem;">&times;</button>
+      </div>
+      <form onsubmit="performAdminLogin(event)">
+        <div style="margin-top:1rem;">
+          <label style="display:block; font-size:0.75rem; font-weight:bold; color:var(--focus); margin-bottom:0.25rem;">Administrator Passcode</label>
+          <input type="password" id="admin-passcode" required style="width:100%; padding:0.5rem; border:1px solid var(--latte); border-radius:6px;" placeholder="Enter master security code...">
+          <p id="passcode-error" style="color:var(--ambition); font-size:0.75rem; display:none; margin-top:0.5rem;">Incorrect passcode. Please try again.</p>
+        </div>
+        <div style="margin-top:1.5rem; text-align:right;">
+          <button type="button" onclick="toggleAdminModal(false)" class="filter-btn">Cancel</button>
+          <button type="submit" class="btn btn-admin" style="background:var(--focus);">Authenticate</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="modal" class="modal-backdrop hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title" style="margin:0; color:var(--focus);">REPORT GREEN CLAIM</h3>
+        <button onclick="toggleModal(false)" style="background:none; border:none; font-size:1.2rem;">&times;</button>
+      </div>
+      <form id="claim-form" onsubmit="handleFormSubmit(event)">
+        <input type="hidden" id="editing-entry-id" value="">
+        <div class="form-group">
+          <label>Brand / Entity Name</label>
+          <input type="text" id="brand" required class="form-control" placeholder="e.g. Nespresso, Gevalia Denmark">
+        </div>
+        <div class="form-group">
+          <label>Source / Classification</label>
+          <select id="source-select" class="form-control"></select>
+        </div>
+        <div class="form-group">
+          <label>Channel / Medium</label>
+          <select id="channel" class="form-control">
+            <option value="Website / Digital">Website / Digital</option>
+            <option value="Social Media Campaign">Social Media Campaign</option>
+            <option value="Product Packaging">Product Packaging</option>
+            <option value="Newsletter / Email">Newsletter / Email</option>
+            <option value="In-Store POS / Banners">In-Store POS / Banners</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>EmpCo & Danish Legal Risk Category</label>
+          <select id="risk-category" class="form-control">
+            <option value="Generic Green Claim (bæredygtig, grøn)">Generic Green Claim ("Bæredygtig", "Grøn", "Miljøvenlig")</option>
+            <option value="Carbon Offsetting / Neutrality">Carbon Neutrality / Offset Compensation ("CO2-neutral")</option>
+            <option value="Recyclability / Compostability Omission">Recyclability Omission ("100% genanvendelig")</option>
+            <option value="Unsubstantiated Future Target">Unsubstantiated Future Target (2030/2050 Net-Zero)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Exact Existing Claim Wording / Cue</label>
+          <textarea id="claim-text" rows="3" required class="form-control" placeholder="Paste or type exact wording..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Photo / Screenshot Evidence</label>
+          <input type="file" id="photo-upload" accept="image/*" class="form-control">
+        </div>
+        <div style="margin-top:1.5rem; text-align:right;">
+          <button type="button" onclick="toggleModal(false)" class="filter-btn">Cancel</button>
+          <button type="submit" class="btn btn-own">Add to Portfolio</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // MICROSOFT FORM BACKUP ENDPOINT
+    const MS_FORM_URL = "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=AQfTIl7s3Eu6T7kjQFOwqSj5U14JC1JHmILS6atg7K5URUJEU1RMUFA3RVM3NEtQMVQ4SUMxRzczTC4u";
+    const MASTER_PASSCODE = "legal2026";
+
+    // LOAD PORTFOLIO AND PERSIST ENTRIES LOCALLY ON GITHUB PAGES
+    let portfolio = JSON.parse(localStorage.getItem('green_claims_portfolio_github_v1')) || [
+      { 
+        id: 101, 
+        brand: "Gevalia Denmark (Internal)", 
+        source: "Internal Brand", 
+        channel: "Website / Digital", 
+        riskCategory: "Generic Green Claim (bæredygtig, grøn)", 
+        claimText: '"Bæredygtig kaffe til enhver lejlighed"', 
+        photo: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500&q=80", 
+        riskLevel: "Very High", 
+        reviewStatus: "Pending Legal Review", 
+        date: "2026-08-17"
+      },
+      { 
+        id: 102, 
+        brand: "Nespresso", 
+        source: "Competitor", 
+        channel: "Product Packaging", 
+        riskCategory: "Carbon Offsetting / Neutrality", 
+        claimText: '"100% Klimaneutral kaffebønne via skovprojekt."', 
+        photo: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=500&q=80", 
+        riskLevel: "Very High", 
+        reviewStatus: "Non-Compliant / Flagged", 
+        date: "2026-08-16"
+      }
+    ];
+
+    let isAdminAuthenticated = false;
+    let sourceFilter = 'all';
+
+    function savePortfolio() {
+      localStorage.setItem('green_claims_portfolio_github_v1', JSON.stringify(portfolio));
+      updateStats();
+    }
+
+    /* DANISH & EU LEGAL RISK AI ENGINE */
+    function calculateAIRiskScore(claimText, category) {
+      let score = 30;
+      let reasons = [];
+      const text = ((claimText || "") + " " + (category || "")).toLowerCase();
+
+      if (text.includes("bæredygtig") || text.includes("grøn") || text.includes("miljøvenlig")) {
+        score += 35;
+        reasons.push("Generic claim without lifecycle (LCA) substantiation violates Forbrugerombudsmandens guidelines.");
+      }
+      if (text.includes("klimaneutral") || text.includes("neutral") || text.includes("co2")) {
+        score += 40;
+        reasons.push("Carbon offset claims face strict enforcement under Danish case law.");
+      }
+      if (text.includes("2030") || text.includes("2050") || text.includes("target")) {
+        score += 25;
+        reasons.push("Unsubstantiated future targets require verified implementation plans.");
+      }
+
+      score = Math.min(Math.max(score, 15), 98);
+      let level = score >= 75 ? "Critical Legal Risk" : (score >= 50 ? "Medium Risk" : "Low Risk");
+      let color = score >= 75 ? "var(--ambition)" : (score >= 50 ? "var(--accent-gold)" : "var(--direction)");
+      return { score, level, color, rationale: reasons.join(" ") || "Broadly compliant under MFL § 5." };
+    }
+
+    function init() {
+      renderPortfolio();
+      updateStats();
+    }
+
+    function openModalForSource(type) {
+      document.getElementById('editing-entry-id').value = '';
+      const isInternal = type === 'Internal Brand';
+      const selectEl = document.getElementById('source-select');
+      selectEl.innerHTML = isInternal 
+        ? `<option value="Internal Brand">Our Own Channels</option>` 
+        : `<option value="Competitor">Competitor Brand</option>`;
+      
+      document.getElementById('modal-title').innerText = isInternal ? "REPORT OWN CHANNEL GREEN CLAIM" : "SPOT COMPETITOR GREEN CLAIM";
+      toggleModal(true);
+    }
+
+    function openAdminEditModal(id) {
+      if (!isAdminAuthenticated) return;
+      const item = portfolio.find(p => p.id === id);
+      if (!item) return;
+
+      document.getElementById('editing-entry-id').value = item.id;
+      document.getElementById('modal-title').innerText = `ADMIN EDIT CLAIM #${item.id}`;
+
+      const selectEl = document.getElementById('source-select');
+      selectEl.innerHTML = `
+        <option value="Internal Brand" ${item.source === 'Internal Brand' ? 'selected' : ''}>Our Own Channels</option>
+        <option value="Competitor" ${item.source === 'Competitor' ? 'selected' : ''}>Competitor Brand</option>
+      `;
+
+      document.getElementById('brand').value = item.brand;
+      document.getElementById('channel').value = item.channel;
+      document.getElementById('risk-category').value = item.riskCategory;
+      document.getElementById('claim-text').value = item.claimText.replace(/^"|"$/g, '');
+
+      toggleModal(true);
+    }
+
+    function toggleModal(s) {
+      document.getElementById('modal').classList.toggle('hidden', !s);
+      if (!s) {
+        document.getElementById('editing-entry-id').value = '';
+        document.getElementById('claim-form').reset();
+      }
+    }
+
+    /* FORM SUBMISSION — INSTANT RENDERING + LOCAL PERSISTENCE */
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const editingId = document.getElementById('editing-entry-id').value;
+      const fileInput = document.getElementById('photo-upload');
+      const file = fileInput.files[0];
+
+      const rawClaimText = document.getElementById('claim-text').value;
+      const categoryVal = document.getElementById('risk-category').value;
+
+      function finalizeSubmission(photoUrl) {
+        if (editingId) {
+          const idx = portfolio.findIndex(p => p.id == editingId);
+          if (idx !== -1) {
+            portfolio[idx].brand = document.getElementById('brand').value;
+            portfolio[idx].source = document.getElementById('source-select').value;
+            portfolio[idx].channel = document.getElementById('channel').value;
+            portfolio[idx].riskCategory = categoryVal;
+            portfolio[idx].claimText = `"${rawClaimText}"`;
+            if (photoUrl) portfolio[idx].photo = photoUrl;
+          }
+        } else {
+          const newEntry = {
+            id: Date.now(),
+            brand: document.getElementById('brand').value,
+            source: document.getElementById('source-select').value,
+            channel: document.getElementById('channel').value,
+            riskCategory: categoryVal,
+            claimText: `"${rawClaimText}"`,
+            photo: photoUrl || "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=500&q=80",
+            riskLevel: "High",
+            reviewStatus: "Pending Legal Review",
+            date: new Date().toISOString().split('T')[0]
+          };
+          portfolio.unshift(newEntry);
+        }
+
+        savePortfolio();
+        toggleModal(false);
+        renderPortfolio();
+      }
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) { finalizeSubmission(event.target.result); };
+        reader.readAsDataURL(file);
+      } else {
+        finalizeSubmission(null);
+      }
+    }
+
+    function handleAdminAuthClick() {
+      if (isAdminAuthenticated) {
+        isAdminAuthenticated = false;
+        document.getElementById('admin-toolbar').classList.add('hidden');
+        document.getElementById('admin-btn-label').innerText = 'Admin Login';
+        renderPortfolio();
+      } else {
+        toggleAdminModal(true);
+      }
+    }
+
+    function toggleAdminModal(s) {
+      document.getElementById('admin-login-modal').classList.toggle('hidden', !s);
+      document.getElementById('passcode-error').style.display = 'none';
+      document.getElementById('admin-passcode').value = '';
+    }
+
+    function performAdminLogin(e) {
+      e.preventDefault();
+      if (document.getElementById('admin-passcode').value === MASTER_PASSCODE) {
+        isAdminAuthenticated = true;
+        toggleAdminModal(false);
+        document.getElementById('admin-toolbar').classList.remove('hidden');
+        document.getElementById('admin-btn-label').innerText = 'Admin Logout';
+        renderPortfolio();
+      } else {
+        document.getElementById('passcode-error').style.display = 'block';
+      }
+    }
+
+    function deleteSubmission(id) {
+      if (!isAdminAuthenticated) return;
+      if (confirm('Master Admin: Are you sure you want to delete this claim submission?')) {
+        portfolio = portfolio.filter(p => p.id !== id);
+        savePortfolio();
+        renderPortfolio();
+      }
+    }
+
+    function updateReviewStatus(id, newStatus) {
+      if (!isAdminAuthenticated) return;
+      const item = portfolio.find(p => p.id === id);
+      if (item) {
+        item.reviewStatus = newStatus;
+        savePortfolio();
+        renderPortfolio();
+      }
+    }
+
+    function renderPortfolio() {
+      const grid = document.getElementById('portfolio-grid');
+      grid.innerHTML = '';
+
+      const filtered = sourceFilter === 'all' ? portfolio : portfolio.filter(p => p.source === sourceFilter);
+
+      filtered.forEach(item => {
+        const isInternal = item.source === 'Internal Brand';
+        const ai = calculateAIRiskScore(item.claimText || "", item.riskCategory || "");
+
+        const card = document.createElement('div');
+        card.className = "card";
+        card.innerHTML = `
+          <div class="card-img-container">
+            <img src="${item.photo}" alt="${item.brand}">
+            <span class="badge-source ${isInternal ? 'badge-internal' : 'badge-competitor'}">${isInternal ? 'OUR OWN CHANNEL' : 'COMPETITOR'}</span>
+            <span class="badge-ai-risk">⚡ Legal AI: ${ai.score}%</span>
+
+            ${isAdminAuthenticated ? `
+              <div class="admin-card-actions">
+                <button onclick="openAdminEditModal(${item.id})" class="btn-action-sm btn-edit">Edit</button>
+                <button onclick="deleteSubmission(${item.id})" class="btn-action-sm btn-delete">Delete</button>
+              </div>
+            ` : ''}
+          </div>
+          <div class="card-body">
+            <div>
+              <div class="card-brand" style="color:${isInternal ? 'var(--direction)' : 'var(--ambition)'}">${item.brand}</div>
+              <div class="card-text">${item.claimText}</div>
+              <div class="card-category"><strong>EmpCo Category:</strong> ${item.riskCategory}</div>
+              
+              <div class="ai-score-container">
+                <div class="ai-score-header">
+                  <span>Danish/EU Legal AI Assessment:</span>
+                  <span style="color:${ai.color};">${ai.score}% (${ai.level})</span>
+                </div>
+                <div class="ai-progress-bar">
+                  <div class="ai-progress-fill" style="width: ${ai.score}%; background-color: ${ai.color};"></div>
+                </div>
+                <div class="ai-legal-rationale">
+                  <strong>Legal Cue:</strong> ${ai.rationale}
+                </div>
+              </div>
+
+              <div style="font-size:0.75rem; margin-bottom: 0.5rem; display:flex; justify-content:space-between; align-items:center;">
+                <strong>Legal Review:</strong>
+                ${isAdminAuthenticated ? `
+                  <select onchange="updateReviewStatus(${item.id}, this.value)" class="status-select">
+                    <option value="Pending Legal Review" ${item.reviewStatus === 'Pending Legal Review' ? 'selected' : ''}>Pending Legal Review</option>
+                    <option value="Approved / Compliant" ${item.reviewStatus === 'Approved / Compliant' ? 'selected' : ''}>Approved / Compliant</option>
+                    <option value="Non-Compliant / Flagged" ${item.reviewStatus === 'Non-Compliant / Flagged' ? 'selected' : ''}>Non-Compliant / Flagged</option>
+                  </select>
+                ` : `
+                  <span>${item.reviewStatus || 'Pending Legal Review'}</span>
+                `}
+              </div>
+            </div>
+            <div style="font-size:0.75rem; color:var(--mocha); display:flex; justify-content:space-between; align-items:center;">
+              <span>${item.channel}</span>
+              <span>${item.date}</span>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function filterSource(s) {
+      sourceFilter = s;
+      document.querySelectorAll('.filter-bar .filter-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      renderPortfolio();
+    }
+
+    function updateStats() {
+      document.getElementById('stat-total').innerText = portfolio.length;
+      document.getElementById('stat-internal').innerText = portfolio.filter(p => p.source === 'Internal Brand').length;
+      document.getElementById('stat-competitors').innerText = portfolio.filter(p => p.source === 'Competitor').length;
+      document.getElementById('stat-highrisk').innerText = portfolio.filter(p => calculateAIRiskScore(p.claimText || "", p.riskCategory || "").score >= 70).length;
+    }
+
+    function exportToCSV() {
+      if (portfolio.length === 0) return alert('No claims to export.');
+      let csv = "ID,Brand,Source,Channel,Category,Text,AI Risk Score,AI Risk Tier,Legal Status,Date\n";
+      portfolio.forEach(i => {
+        const ai = calculateAIRiskScore(i.claimText || "", i.riskCategory || "");
+        csv += `${i.id},"${i.brand}","${i.source}","${i.channel}","${i.riskCategory}","${i.claimText}","${ai.score}%","${ai.level}","${i.reviewStatus || 'Pending'}","${i.date}"\n`;
+      });
+      const link = document.createElement("a");
+      link.href = encodeURI("data:text/csv;charset=utf-8," + encodeURIComponent(csv));
+      link.download = `green_claims_portfolio.csv`;
+      link.click();
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
